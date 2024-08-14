@@ -8,9 +8,6 @@ import docx
 import pymupdf
 from llama_cpp import Llama
 
-
-
-
 class MultiLangTranslation():
     """
     initiates an instance with source and target languages for translation.
@@ -25,17 +22,27 @@ class MultiLangTranslation():
     def __init__(self, source_lang, target_lang, model_name_or_path,model_file, n_ctx=None,nlp_obj=None):
         self.src=source_lang
         self.trg=target_lang
-        self.nlp_obj = spacy.load("ko_core_news_lg") if nlp_obj is None else nlp_obj
+
+        try:
+            self.nlp_obj = spacy.load("ko_core_news_lg") if nlp_obj is None else nlp_obj
+        except Exception as err:
+            print("error in loading spacy model")
+            print(err)
 
         self.model_name_or_path =model_name_or_path
         self.model_file =model_file
         user_n_ctx=512 if n_ctx is None else n_ctx
-        self.llm = Llama.from_pretrained(
-                    repo_id=model_name_or_path,
-                    filename=model_file,#*q8_0.gguf",
-                    verbose=False,
-                    n_ctx=user_n_ctx
-                )
+        print(f"first n_ctx is set to {user_n_ctx}")
+        try:
+            self.llm = Llama.from_pretrained(
+                        repo_id=model_name_or_path,
+                        filename=model_file,#*q8_0.gguf",
+                        verbose=True,
+                        n_ctx=user_n_ctx
+                    )
+        except Exception as err:
+            print("error in loading model from huggingface")
+            print(err)
         print(f"n_ctx is set to {self.llm.n_ctx()}")
 
     def getText_docx(self,filename:str,)->str:
